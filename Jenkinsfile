@@ -14,14 +14,16 @@ pipeline {
                 sh "aws sts get-caller-identity"
             }
         }
-        dir("code") {
-            stage("Build the project") {
-                steps {
+        stage("Build the project") {
+            steps {
+                dir("code") {
                     sh "sam build"
                 }
             }
-            stage("Deploy to AWS") {
-                steps {
+        }
+        stage("Deploy to AWS") {
+            steps {
+                dir("code") {
                     sh "sam deploy --no-confirm-changeset --no-fail-on-empty-changeset"
                 }
             }
