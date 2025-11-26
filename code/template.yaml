@@ -33,7 +33,7 @@ Resources:
                 - dynamodb:GetItem
                 - dynamodb:PutItem
                 - dynamodb:UpdateItem
-              Resource: arn:aws:dynamodb:us-east-1:029756584744:table/Assignment-1
+              Resource: !GetAtt DDBTable.Arn
             - Effect: Allow
               Action:
                 - sns:Publish
