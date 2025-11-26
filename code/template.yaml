@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Assignment 1
+
+Resources:
+  DDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Assignment-1
+      PrimaryKey:
+        Name: instance_id
+        Type: String
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: Assignment-1-SNS
+      DisplayName: SNS topic for Assignment-1 (to notify when a new EC2 is launched)
+  LambdaFunc:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      CodeUri: .
+      Handler: lambda_function.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref SNSTopic
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource: arn:aws:dynamodb:us-east-1:029756584744:table/Assignment-1
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref SNSTopic
+      Events:
+        CWEvent:
+          Type: CloudWatchEvent
+          Properties:
+            Enabled: true
+            Pattern:
+              source:
+                - aws.ec2
+              detail-type:
+                - EC2 Instance State-change Notification
+              detail:
+                state:
+                  - pending
+                  - running
+                  - stopped
+                  - terminated
